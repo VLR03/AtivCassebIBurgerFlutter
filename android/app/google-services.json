@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "39979465391",
+    "project_id": "iburgerfirebase",
+    "storage_bucket": "iburgerfirebase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39979465391:android:2a64705f0511ee7947b25a",
+        "android_client_info": {
+          "package_name": "com.example.iburger"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFvSAtbEpKGZsODiCXripviGIIMs0GKfk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

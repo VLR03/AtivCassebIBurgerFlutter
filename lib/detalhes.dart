@@ -16,7 +16,7 @@ class DetalhesPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(hamburgueria['image']),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Text('Avaliação: ${hamburgueria['rating']}'),
           ],
         ),
