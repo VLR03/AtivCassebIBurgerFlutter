@@ -1,10 +1,11 @@
-import 'dart:html';
-
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:iburger/Pages/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:iburger/detalhes.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'firebase_options.dart';
+import 'dart:html';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      // home: LoginPage(),
       home: HomePage(),
     );
   }
@@ -33,12 +35,22 @@ class MyApp extends StatelessWidget {
 
 class HomePage extends StatelessWidget {
   final DatabaseReference _database = FirebaseDatabase.instance.ref().child('Hamburguerias');
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hamburguerias'),
+        title: const Text('IBurger'),
+        actions: [
+          IconButton(
+            icon: _auth.currentUser != null ? const Icon(Icons.person) : const Icon(Icons.person_outline),
+            color: _auth.currentUser != null ? Colors.green : Colors.grey,
+            onPressed: () {
+              _handleUserIconClick(context);
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -93,80 +105,19 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+
+  void _handleUserIconClick(BuildContext context) {
+    if (_auth.currentUser == null) {
+      print('Você não está logado');
+      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    } else {
+      _logout(context);
+    }
+  }
+
+  void _logout(BuildContext context) async {
+    await _auth.signOut();
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
+    print('Você estava logado e deslogou');
+  }
 }
-
-// #region Versão 2 (comentada)
-// class HomePage extends StatelessWidget {
-//   final List<Map<String, dynamic>> hamburguerias = [
-//     {"name": "NuKanto Burger", "image": "assets/NuKanto.jpg", "rating": 4.5},
-//     {"name": "Burger Queen", "image": "assets/BurgerQueen.jpg", "rating": 4.0},
-//     {"name": "Geek Burger", "image": "assets/GeekBurger.jpg", "rating": 5.0},
-//     {"name": "Porpino Burger", "image": "assets/Porpino.jpg", "rating": 5.0},
-//     {"name": "Terraco Burger", "image": "assets/Terraco.jpg", "rating": 3.5},
-//     {"name": "KomBurger", "image": "assets/Komburger.jpg", "rating": 3.0},
-//   ];
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Hamburguerias'),
-//       ),
-//       body: Container(
-//         decoration: const BoxDecoration(
-//           image: DecorationImage(
-//             image: AssetImage("assets/Pokemon.jpg"),
-//             fit: BoxFit.cover,
-//           ),
-//         ),
-//         child: ListView.builder(
-//           itemCount: hamburguerias.length,
-//           itemBuilder: (context, index) {
-//             return ListTile(
-//               leading: CircleAvatar(
-//                 backgroundImage: AssetImage(hamburguerias[index]['image']),
-//               ),
-//               title: Text(hamburguerias[index]['name']),
-//               subtitle: Text('Avaliação: ${hamburguerias[index]['rating']}'),
-//               onTap: () {
-//                 Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                     builder: (context) => DetalhesPage(
-//                       hamburgueria: hamburguerias[index],
-//                     ),
-//                   ),
-//                 );
-//               },
-//             );
-//           },
-//         ),
-//       ),
-      // #region Versão 1 (comentada)
-      // body: ListView.builder(
-      //   itemCount: hamburguerias.length,
-      //   itemBuilder: (context, index) {
-      //     return ListTile(
-      //       leading: CircleAvatar(
-      //         backgroundImage: AssetImage(hamburguerias[index]['image']),
-      //       ),
-      //       title: Text(hamburguerias[index]['name']),
-      //       subtitle: Text('Avaliação: ${hamburguerias[index]['rating']}'),
-      //       onTap: () {
-      //         Navigator.push(
-      //           context,
-      //           MaterialPageRoute(
-      //             builder: (context) => DetalhesPage(
-      //               hamburgueria: hamburguerias[index],
-      //             ),
-      //           ),
-      //         );
-      //       },
-      //     );
-      //   },
-      // ),
-      // #endregion
-//     );
-//   }
-// }
-// #endregion
