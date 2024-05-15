@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:iburger/Pages/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:iburger/Pages/registro_page.dart';
 import 'package:iburger/detalhes.dart';
 import 'firebase_options.dart';
 import 'dart:html';
@@ -63,7 +64,8 @@ class HomePage extends StatelessWidget {
           stream: _database.onValue,
           builder: (context, snapshot) {
             if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
-              Map<String, dynamic> values = (snapshot.data!.snapshot.value as Map).cast<String, dynamic>();
+              // Map<String, dynamic> values = (snapshot.data!.snapshot.value as Map).cast<String, dynamic>();
+              Map<String, dynamic> values = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
               List<Map<String, dynamic>> hamburguerias = [];
               values.forEach((key, value) {
                 hamburguerias.add({
@@ -73,27 +75,42 @@ class HomePage extends StatelessWidget {
                   'rating': value['rating'].toDouble(),
                 });
               });
-              return ListView.builder(
-                itemCount: hamburguerias.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: AssetImage(hamburguerias[index]['image']),
+              return Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: hamburguerias.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: AssetImage(hamburguerias[index]['image']),
+                          ),
+                          title: Text(hamburguerias[index]['name']),
+                          subtitle: Text('Avaliação: ${hamburguerias[index]['rating']}'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetalhesPage(
+                                  hamburgueria: hamburguerias[index],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
-                    title: Text(hamburguerias[index]['name']),
-                    subtitle: Text('Avaliação: ${hamburguerias[index]['rating']}'),
-                    onTap: () {
+                  ),
+                  _auth.currentUser != null ? ElevatedButton(
+                    onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => DetalhesPage(
-                            hamburgueria: hamburguerias[index],
-                          ),
-                        ),
+                        MaterialPageRoute(builder: (context) => RegistroPage()),
                       );
                     },
-                  );
-                },
+                    child: const Text('Registrar Hamburgueria'),
+                  ) : Container(),
+                ],
               );
             } else {
               return const Center(
