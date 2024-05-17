@@ -11,6 +11,7 @@ class _RegistroPageState extends State<RegistroPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _ratingController = TextEditingController();
   final TextEditingController _imageController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   final DatabaseReference _database = FirebaseDatabase.instance.ref().child('Hamburguerias');
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String _errorMessage = '';
@@ -26,8 +27,9 @@ class _RegistroPageState extends State<RegistroPage> {
     final String name = _nameController.text.trim();
     final String ratingStr = _ratingController.text.trim();
     final String image = _imageController.text.trim();
+    final String description = _descriptionController.text.trim();
 
-    if (name.isEmpty || ratingStr.isEmpty || image.isEmpty) {
+    if (name.isEmpty || ratingStr.isEmpty || image.isEmpty || description.isEmpty) {
       setState(() {
         _errorMessage = 'Todos os campos são obrigatórios.';
       });
@@ -52,10 +54,14 @@ class _RegistroPageState extends State<RegistroPage> {
       return;
     }
 
+    final String userId = _auth.currentUser!.uid;
+
     await _database.push().set({
       'name': name,
       'rating': rating,
       'image': image,
+      'description': description,
+      'userId': userId
     });
 
     Navigator.pop(context);
@@ -86,6 +92,11 @@ class _RegistroPageState extends State<RegistroPage> {
             TextField(
               controller: _imageController,
               decoration: const InputDecoration(labelText: 'Imagem'),
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: 'Descrição'),
             ),
             const SizedBox(height: 16.0),
             if (_errorMessage.isNotEmpty)

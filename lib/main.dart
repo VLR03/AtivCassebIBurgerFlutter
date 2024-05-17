@@ -1,10 +1,10 @@
 import 'package:firebase_database/firebase_database.dart';
+import 'package:iburger/Pages/registro_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:iburger/Pages/login_page.dart';
 import 'package:flutter/material.dart';
-import 'package:iburger/Pages/registro_page.dart';
-import 'package:iburger/detalhes.dart';
+import 'package:iburger/Pages/detalhes_page.dart';
 import 'firebase_options.dart';
 import 'dart:html';
 
@@ -64,7 +64,6 @@ class HomePage extends StatelessWidget {
           stream: _database.onValue,
           builder: (context, snapshot) {
             if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
-              // Map<String, dynamic> values = (snapshot.data!.snapshot.value as Map).cast<String, dynamic>();
               Map<String, dynamic> values = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
               List<Map<String, dynamic>> hamburguerias = [];
               values.forEach((key, value) {
@@ -73,6 +72,8 @@ class HomePage extends StatelessWidget {
                   'name': value['name'],
                   'image': value['image'],
                   'rating': value['rating'].toDouble(),
+                  'description': value['description'],
+                  'userId': value['userId'],
                 });
               });
               return Column(
