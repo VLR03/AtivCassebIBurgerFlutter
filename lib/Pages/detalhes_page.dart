@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'dart:convert';
+
 
 class DetalhesPage extends StatelessWidget {
   final Map<String, dynamic> hamburgueria;
@@ -7,36 +10,104 @@ class DetalhesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Uint8List imageBytes = base64Decode(hamburgueria['image']);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(hamburgueria['name']),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(hamburgueria['image']),
-            const SizedBox(height: 20),
-            Text(
-              'Avaliação: ${hamburgueria['rating']}',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                hamburgueria['description'],
-                style: const TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/Pokemon5.jpg"),
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              'Registrado por: ${hamburgueria['userId']}',
-              style: const TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
-            )
-          ],
-        ),
+          ),
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 250,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(0),
+                      bottomRight: Radius.circular(0),
+                    ),
+                    image: DecorationImage(
+                      image: MemoryImage(imageBytes),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        hamburgueria['name'],
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 10.0,
+                              color: Colors.black,
+                              offset: Offset(3.0, 3.0),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          for (var i = 0; i < 5; i++)
+                            Icon(
+                              i < hamburgueria['rating'] ? Icons.star : Icons.star_border,
+                              color: Colors.yellow,
+                              size: 28,
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Descrição',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        hamburgueria['description'],
+                        style: const TextStyle(fontSize: 18, color: Colors.white),
+                        textAlign: TextAlign.justify,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Registrado por: ${hamburgueria['userId']}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

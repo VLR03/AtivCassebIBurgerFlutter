@@ -2,10 +2,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:iburger/Pages/registro_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:iburger/Pages/detalhes_page.dart';
 import 'package:iburger/Pages/login_page.dart';
 import 'package:flutter/material.dart';
-import 'package:iburger/Pages/detalhes_page.dart';
 import 'firebase_options.dart';
+import 'dart:typed_data';
+import 'dart:convert';
 import 'dart:html';
 
 void main() async {
@@ -82,9 +84,11 @@ class HomePage extends StatelessWidget {
                     child: ListView.builder(
                       itemCount: hamburguerias.length,
                       itemBuilder: (context, index) {
+                        Uint8List? imageData = base64Decode(hamburguerias[index]['image']);
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundImage: AssetImage(hamburguerias[index]['image']),
+                            // backgroundImage: NetworkImage(hamburguerias[index]['image']),
+                            backgroundImage: MemoryImage(imageData),
                           ),
                           title: Text(hamburguerias[index]['name']),
                           subtitle: Text('Avaliação: ${hamburguerias[index]['rating']}'),
