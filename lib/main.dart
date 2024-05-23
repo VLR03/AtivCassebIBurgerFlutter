@@ -36,9 +36,69 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref().child('Hamburguerias');
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _database = FirebaseDatabase.instance.ref().child('Hamburguerias');
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    // _statusLogin();
+  }
+
+  void _statusLogin() {
+    _auth.authStateChanges().listen((User? user) {
+      setState(() {
+        _currentUser = user;
+      });
+      if (user == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
+    });
+  }
+
+  void _logout() async {
+    await _auth.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
+  void _paginaLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+    
+  }
+
+  void _paginaDetalhes(Map<String, dynamic> hamburgueria) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetalhesPage(hamburgueria: hamburgueria),
+      ),
+    );
+  }
+
+  void _paginaRegistro() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => RegistroPage(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,99 +107,63 @@ class HomePage extends StatelessWidget {
         title: const Text('IBurger'),
         actions: [
           IconButton(
-            icon: _auth.currentUser != null ? const Icon(Icons.person) : const Icon(Icons.person_outline),
-            color: _auth.currentUser != null ? Colors.green : Colors.grey,
-            onPressed: () {
-              _handleUserIconClick(context);
-            },
+            icon: const Icon(Icons.add),
+            onPressed: _paginaRegistro,
+          ),
+          _currentUser != null
+          ? IconButton(
+              icon: const Icon(Icons.exit_to_app),
+              onPressed: _logout,
+            )
+          : IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: _paginaLogin,
           ),
         ],
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/Pokemon.jpg"),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: StreamBuilder<DatabaseEvent>(
-          stream: _database.onValue,
-          builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
-              Map<String, dynamic> values = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
-              List<Map<String, dynamic>> hamburguerias = [];
-              values.forEach((key, value) {
-                hamburguerias.add({
-                  'id': key,
-                  'name': value['name'],
-                  'image': value['image'],
-                  'rating': value['rating'].toDouble(),
-                  'description': value['description'],
-                  'userId': value['userId'],
-                });
+      body: StreamBuilder<DatabaseEvent>(
+        stream: _database.onValue,
+        builder: (context, snapshot) {
+          if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+            Map<String, dynamic> values = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
+            List<Map<String, dynamic>> hamburguerias = [];
+            values.forEach((key, value) {
+              hamburguerias.add({
+                'id': key,
+                'name': value['name'],
+                'rating': value['rating'].toDouble(),
+                'image': value['image'],
+                'description': value['description'],
+                'userId': value['userId'],
               });
-              return Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: hamburguerias.length,
-                      itemBuilder: (context, index) {
-                        Uint8List? imageData = base64Decode(hamburguerias[index]['image']);
-                        return ListTile(
-                          leading: CircleAvatar(
-                            // backgroundImage: NetworkImage(hamburguerias[index]['image']),
-                            backgroundImage: MemoryImage(imageData),
-                          ),
-                          title: Text(hamburguerias[index]['name']),
-                          subtitle: Text('Avaliação: ${hamburguerias[index]['rating']}'),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DetalhesPage(
-                                  hamburgueria: hamburguerias[index],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+            });
+            return ListView.builder(
+              itemCount: hamburguerias.length,
+              itemBuilder: (context, index) {
+                Uint8List imageBytes = base64Decode(hamburguerias[index]['image']);
+                return ListTile(
+                  leading: Image.memory(imageBytes, width: 50, height: 50),
+                  title: Text(hamburguerias[index]['name']),
+                  subtitle: Row(
+                    children: [
+                      for (var i = 0; i < 5; i++)
+                        Icon(
+                          i < hamburguerias[index]['rating'] ? Icons.star : Icons.star_border,
+                          color: Colors.yellow,
+                        ),
+                    ],
                   ),
-                  _auth.currentUser != null ? ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => RegistroPage()),
-                      );
-                    },
-                    child: const Text('Registrar Hamburgueria'),
-                  ) : Container(),
-                ],
-              );
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          },
-        ),
+                  onTap: () => _paginaDetalhes(hamburguerias[index]),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: Text('Nenhuma hamburgueria encontrada.'),
+            );
+          }
+        },
       ),
     );
-  }
-
-  void _handleUserIconClick(BuildContext context) {
-    if (_auth.currentUser == null) {
-      print('Você não está logado');
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage()));
-    } else {
-      _logout(context);
-    }
-  }
-
-  void _logout(BuildContext context) async {
-    await _auth.signOut();
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
-    print('Você estava logado e deslogou');
   }
 }
