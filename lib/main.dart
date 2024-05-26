@@ -121,49 +121,61 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: StreamBuilder<DatabaseEvent>(
-        stream: _database.onValue,
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
-            Map<String, dynamic> values = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
-            List<Map<String, dynamic>> hamburguerias = [];
-            values.forEach((key, value) {
-              hamburguerias.add({
-                'id': key,
-                'name': value['name'],
-                'rating': value['rating'].toDouble(),
-                'image': value['image'],
-                'description': value['description'],
-                'userId': value['userId'],
-              });
-            });
-            return ListView.builder(
-              itemCount: hamburguerias.length,
-              itemBuilder: (context, index) {
-                Uint8List imageBytes = base64Decode(hamburguerias[index]['image']);
-                return ListTile(
-                  leading: Image.memory(imageBytes, width: 50, height: 50),
-                  title: Text(hamburguerias[index]['name']),
-                  subtitle: Row(
-                    children: [
-                      for (var i = 0; i < 5; i++)
-                        Icon(
-                          i < hamburguerias[index]['rating'] ? Icons.star : Icons.star_border,
-                          color: Colors.yellow,
-                        ),
-                    ],
-                  ),
-                  onTap: () => _paginaDetalhes(hamburguerias[index]),
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/Pokemon.jpg"),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          StreamBuilder<DatabaseEvent>(
+            stream: _database.onValue,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.snapshot.value != null) {
+                Map<String, dynamic> values = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
+                List<Map<String, dynamic>> hamburguerias = [];
+                values.forEach((key, value) {
+                  hamburguerias.add({
+                    'id': key,
+                    'name': value['name'],
+                    'rating': value['rating'].toDouble(),
+                    'image': value['image'],
+                    'description': value['description'],
+                    'userId': value['userId'],
+                  });
+                });
+                return ListView.builder(
+                  itemCount: hamburguerias.length,
+                  itemBuilder: (context, index) {
+                    Uint8List imageBytes = base64Decode(hamburguerias[index]['image']);
+                    return ListTile(
+                      leading: Image.memory(imageBytes, width: 50, height: 50),
+                      title: Text(hamburguerias[index]['name']),
+                      subtitle: Row(
+                        children: [
+                          for (var i = 0; i < 5; i++)
+                            Icon(
+                              i < hamburguerias[index]['rating'] ? Icons.star : Icons.star_border,
+                              color: Colors.yellow,
+                            ),
+                        ],
+                      ),
+                      onTap: () => _paginaDetalhes(hamburguerias[index]),
+                    );
+                  },
                 );
-              },
-            );
-          } else {
-            return const Center(
-              child: Text('Nenhuma hamburgueria encontrada.'),
-            );
-          }
-        },
-      ),
+              } else {
+                return const Center(
+                  child: Text('Nenhuma hamburgueria encontrada.'),
+                );
+              }
+            },
+          ),
+        ],
+      )
     );
   }
 }
